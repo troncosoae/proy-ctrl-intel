@@ -3,7 +3,7 @@ import numpy as np
 from Simulation.Simulation import SimulationBox
 
 
-class WindModel(SimulationBox):
+class RandomWindModel(SimulationBox):
     def __init__(self, key, Ts, **kwargs):
         SimulationBox.__init__(
             self, key, [], ['v_m', 'v_s', 'v_ws', 'v_ts', 'v_W'])
@@ -46,7 +46,7 @@ class WindModel(SimulationBox):
         }
 
 
-class WindModel(SimulationBox):
+class StepWindModel(SimulationBox):
     def __init__(self, key, Ts, T_stable, **kwargs):
         SimulationBox.__init__(
             self, key, [], ['v_m', 'v_s', 'v_ws', 'v_ts', 'v_W'])
