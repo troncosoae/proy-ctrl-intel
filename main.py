@@ -2,8 +2,9 @@ import numpy as np
 import argparse
 
 from Simulation.Simulation import Simulation, get_close_sim_for_box
-from System.SystemBoxes import WindModel, BladePitchSystem, \
-    DriveTrainModel, GeneratorConverterModel
+from System.SystemBoxes import BladePitchSystem, \
+    DriveTrainModel, GeneratorConverterModel, \
+    RandomWindModel, StepWindModel, ConstantWindModel
 from Simulation.PygameBoxes import PlottingTurbineWindow
 from System.MeasuringBoxes import PlottingMeasurer
 from Control.ControlBoxes import PIDController, TurbineController
@@ -26,7 +27,10 @@ if __name__ == "__main__":
 
     sim = Simulation()
 
-    wind_model = WindModel('wind_model', Ts)
+    # wind_model = RandomWindModel('wind_model', Ts)
+    # wind_model = StepWindModel('wind_model', Ts, 1)
+    wind_model = ConstantWindModel('wind_model', 8)
+    # wind_model = ConstantWindModel('wind_model', 15)
     blade_pitch_system = BladePitchSystem('bp_sys', Ts)
     drive_train_model = DriveTrainModel(
         'dt_model', Ts,
