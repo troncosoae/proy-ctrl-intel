@@ -46,6 +46,55 @@ class WindModel(SimulationBox):
         }
 
 
+class WindModel(SimulationBox):
+    def __init__(self, key, Ts, T_stable, **kwargs):
+        SimulationBox.__init__(
+            self, key, [], ['v_m', 'v_s', 'v_ws', 'v_ts', 'v_W'])
+
+        self.Ts = Ts
+        self.T_stable = T_stable
+        self.counter = 0
+        self.counter_max = T_stable/Ts
+        self.mean = kwargs.get('mean', 10)
+        self.std = kwargs.get('std', 10)
+        self.v_W = np.abs(np.random.normal(self.mean, self.std))
+
+    def advance(self, input_values):
+        super().advance(input_values)
+
+        self.counter += 1
+        if self.counter >= self.counter_max:
+            self.counter = 0
+            self.v_W = np.abs(np.random.normal(self.mean, self.std))
+
+        return {
+            'v_m':  0,
+            'v_s':  0,
+            'v_ws': 0,
+            'v_ts': 0,
+            'v_W': self.v_W,
+        }
+
+
+class ConstantWindModel(SimulationBox):
+    def __init__(self, key, v_W, **kwargs):
+        SimulationBox.__init__(
+            self, key, [], ['v_m', 'v_s', 'v_ws', 'v_ts', 'v_W'])
+
+        self.v_W = v_W
+
+    def advance(self, input_values):
+        super().advance(input_values)
+
+        return {
+            'v_m':  0,
+            'v_s':  0,
+            'v_ws': 0,
+            'v_ts': 0,
+            'v_W': self.v_W,
+        }
+
+
 class GeneratorConverterModel(SimulationBox):
     def __init__(self, key, Ts, **kwargs):
         SimulationBox.__init__(
