@@ -2,7 +2,6 @@ from matplotlib import pyplot
 import numpy as np
 import pygame
 from pygame import gfxdraw
-from pygame.transform import scale
 
 from Simulation.Simulation import SimulationBox
 
@@ -57,9 +56,14 @@ class PlottingTurbineWindow(TurbineWindow):
         inputs_keys = list(inputs_color_dict.keys())
         TurbineWindow.__init__(
             self, key, inputs_keys, fs, close_function, **kwargs)
+        self.surface = pygame.Surface((self.width, self.height))
+        self.surface.fill((255, 255, 255))
+        self.window.blit(self.surface, (0, 0))
+        pygame.display.update()
         self.values = {}
         self.min = min
         self.max = max
+        self.last_scale = 1
 
     def handle_events(self):
         for event in pygame.event.get():
@@ -85,25 +89,56 @@ class PlottingTurbineWindow(TurbineWindow):
         return super().advance(input_values)
 
     def get_positions(self):
+
+        print(self.values)
+        arr_vals = [self.values[key] for key in self.values]
+        print(arr_vals)
+        np_vals = np.asarray(arr_vals, dtype=np.float32)
+        print(np_vals)
+        print(np.max(np_vals), np.min(np_vals))
+        print(np.max([np.max(np_vals), -1*np.min(np_vals), 10]))
+        abs_max = np.max([np.max(np_vals), -1*np.min(np_vals), 1])
+        scale = (self.height)/(2*abs_max)
+        print(scale)
+
+        # scale positions
         positions = {
-            key: int(self.height - self.height/(self.min - self.max)*self.min +
-                     self.values[key]*self.height/(self.min - self.max))
+            key: int(self.height/2 - self.values[key]*scale)
             for key in self.values}
 
-        return positions
+        print(positions)
+        new_surface_size = (self.width, int(self.height*scale/self.last_scale))
+        self.last_scale = scale
+        offset = int((self.height - new_surface_size[1])/2)
+
+        print(new_surface_size, offset)
+
+        return positions, new_surface_size, offset
 
     def refresh_window(self):
-        positions = self.get_positions()
-        self.window.scroll(dx=-1)
+        positions, new_surface_size, offset = self.get_positions()
+
+        self.surface.scroll(dx=-1)
         pygame.draw.lines(
-            self.window, (0, 0, 0), False,
+            self.surface, (0, 0, 0), False,
             [(self.width-1, 0), (self.width-1, self.height)], 1
         )
+        gfxdraw.pixel(
+            self.surface, self.width-1, int(self.height/2),
+            (255, 255, 255))
         for key in positions:
             if 0 <= positions[key] < self.height:
                 gfxdraw.pixel(
-                    self.window, self.width-1, positions[key],
+                    self.surface, self.width-1, positions[key],
                     self.inputs_color_dict[key])
+
+        new_surface = pygame.Surface(new_surface_size)
+        pygame.transform.scale(self.surface, new_surface_size, new_surface)
+
+        self.surface.fill((0, 0, 0))
+        self.surface.blit(new_surface, (0, offset))
+        self.window.fill((0, 0, 0))
+        self.window.blit(self.surface, (0, 0))
 
         return super().refresh_window()
 

@@ -49,6 +49,7 @@ if __name__ == "__main__":
             # 'omega_gr': (255, 255, 255),
             'omega_g': (255, 255, 0),
             'beta_r': (255, 0, 0),
+            'P_g': (0, 255, 0),
         },
         -0.5, 1.5, pygame_fs, get_close_sim_for_box(sim))
 
@@ -57,7 +58,6 @@ if __name__ == "__main__":
         blade_pitch_system, {'beta_r': beta_r_stable, 'omega_r': 1})
     sim.add_box(drive_train_model, {'tau_g': 1})
     sim.add_box(generator_converter_model, {'tau_gr': tau_gr_stable})
-    # sim.add_box(omega_g_ctrl, {'P_r': 1000, 'omega_gr': 0.05})
     sim.add_box(measurer, {'tau_gm': 10})
     sim.add_box(pygame_tracker)
 
@@ -65,8 +65,4 @@ if __name__ == "__main__":
 
     pygame_tracker.quit_pygame()
 
-    measurer.plot_values({'tau_g', 'tau_gm'})
-
-    # if 'csv_path' in vars(args):
-    #     csv_path = args.csv_path
-    #     measurer.export_values(csv_path)
+    measurer.plot_values({'tau_g', 'P_g', 'beta_m'})
