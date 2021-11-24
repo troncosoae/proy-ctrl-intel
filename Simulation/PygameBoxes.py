@@ -57,7 +57,6 @@ class PlottingTurbineWindow(TurbineWindow):
         TurbineWindow.__init__(
             self, key, inputs_keys, fs, close_function, **kwargs)
         self.surface = pygame.Surface((self.width, self.height))
-        self.surface.fill((255, 255, 255))
         self.window.blit(self.surface, (0, 0))
         pygame.display.update()
         self.values = {}

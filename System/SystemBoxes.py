@@ -99,7 +99,7 @@ class GeneratorConverterModel(SimulationBox):
     def __init__(self, key, Ts, **kwargs):
         SimulationBox.__init__(
             self, key, ['omega_g', 'tau_gr'],
-            ['tau_g', 'P_g', 'omega_gm'])
+            ['tau_g', 'P_g'])
 
         self.chars = {
             'Ts': Ts,
@@ -127,7 +127,6 @@ class GeneratorConverterModel(SimulationBox):
         return {
             'tau_g': self.state['tau_g'],
             'P_g': P_g,
-            'omega_gm': omega_g
         }
 
 
@@ -135,7 +134,7 @@ class DriveTrainModel(SimulationBox):
     def __init__(self, key, Ts, **kwargs):
         SimulationBox.__init__(
             self, key, ['tau_r', 'tau_g'],
-            ['omega_g', 'omega_r', 'omega_rm', 'theta_d'])
+            ['omega_g', 'omega_r', 'theta_d'])
 
         self.chars = {
             'Ts': Ts,
@@ -191,7 +190,6 @@ class DriveTrainModel(SimulationBox):
         return {
             'omega_g': self.state['omega_g'],
             'omega_r': self.state['omega_r'],
-            'omega_rm': self.state['omega_r'],
             'theta_d': self.state['theta_d'],
         }
 
@@ -201,9 +199,20 @@ class BladePitchSystem(SimulationBox):
         SimulationBox.__init__(
             self, key, ['v_W', 'beta_r', 'omega_r'], ['beta_m', 'tau_r'])
 
+        # def default_Cq(lmbda, beta):
+        #     A = 2/(1 + np.exp(-0.25*lmbda)) - 1
+        #     Cq = A*(1 - np.cos(2*beta))
+        #     return Cq
+
+        def default_Cp(lmbda, beta):
+            f_beta = 2 - 4*beta/np.pi
+            g_beta = 10 - 10*beta/np.pi
+            sigma = 1/(1 + np.exp(-(lmbda - 10)/1.5))
+            Cp = sigma*(f_beta - f_beta*lmbda/g_beta)
+            return Cp
+
         def default_Cq(lmbda, beta):
-            A = 2/(1 + np.exp(-0.25*lmbda)) - 1
-            Cq = A*(1 - np.cos(2*beta))
+            Cq = default_Cp(lmbda, beta)/lmbda
             return Cq
 
         self.chars = {
@@ -215,7 +224,7 @@ class BladePitchSystem(SimulationBox):
             'Ts': Ts,
         }
         self.state = {
-            'beta_m': kwargs.get('beta_m_0', 0),
+            'beta_m': kwargs.get('beta_m_0', np.pi/2),
             'beta_m_dot': kwargs.get('beta_m_dot_0', 0),
         }
 
@@ -238,7 +247,7 @@ class BladePitchSystem(SimulationBox):
         )
 
         lmbda = w*R/v_W
-        tau_r = (ro*np.pi*R**3*Cq(lmbda, bm)*v_W**2)/2
+        tau_r = -(ro*np.pi*R**3*Cq(lmbda, bm)*v_W**2)/2
 
         return {
             'tau_r': tau_r,
