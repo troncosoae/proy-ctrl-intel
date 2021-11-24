@@ -7,7 +7,7 @@ from System.SystemBoxes import BladePitchSystem, \
     RandomWindModel, StepWindModel, ConstantWindModel
 from Simulation.PygameBoxes import PlottingTurbineWindow
 from System.MeasuringBoxes import PlottingMeasurer
-from Control.ControlBoxes import PIDController, Mapper
+from Control.ControlBoxes import PIDController, Mapper, PIDVarController
 
 
 if __name__ == "__main__":
@@ -21,9 +21,11 @@ if __name__ == "__main__":
 
     sim = Simulation()
 
-    # wind_model = RandomWindModel('wind_model', Ts)
+    wind_model = RandomWindModel('wind_model', Ts)
     # wind_model = StepWindModel('wind_model', Ts, 1)
-    wind_model = ConstantWindModel('wind_model', 8)
+    # wind_model = StepWindModel('wind_model', Ts, 5, mean=5, std=3)
+    # wind_model = StepWindModel('wind_model', Ts, 10, mean=15, std=3)
+    # wind_model = ConstantWindModel('wind_model', 8)
     # wind_model = ConstantWindModel('wind_model', 15)
     # wind_model = ConstantWindModel('wind_model', 0.001)
     blade_pitch_system = BladePitchSystem('bp_sys', Ts)
@@ -37,7 +39,7 @@ if __name__ == "__main__":
             'omega_g', 'P_g', 'tau_g', 'tau_r', 'tau_gr',
             'theta_d',
             # 'tau_gm', 'P_r'
-            'x',
+            'x', 'P_r'
         ],
         Ts)
     pygame_tracker = PlottingTurbineWindow(
@@ -47,14 +49,16 @@ if __name__ == "__main__":
             'omega_r': (0, 255, 255),
             'beta_r': (255, 0, 0),
             'P_g': (0, 255, 0),
+            'P_r': (100, 255, 100),
             'v_W': (0, 0, 255),
         },
         -0.5, 1.5, pygame_fs, get_close_sim_for_box(sim))
     pid_controller = PIDController(
-        'pid', 'P_r', 'P_g', 'x', -10, 10, 10, Ts)
+        'pid', 'P_r', 'P_g', 'x', -1, 0.01, 0.1, Ts)
     pid_mapper = Mapper(
         'map_pid', ['x'], ['beta_r'],
         {'x': lambda x: 0.5*np.arctan(-x*0.2) + np.pi/4},
+        # {'x': lambda x: np.arctan(-x*0.2)},
         {'x': 'beta_r'}
     )
 
@@ -75,5 +79,8 @@ if __name__ == "__main__":
 
     measurer.plot_values({
         'tau_g', 'P_g', 'beta_m', 'v_W', 'omega_r', 'omega_g',
-        'beta_r',
+        'beta_r', 'P_r'
+    })
+    measurer.plot_values({
+        'beta_m', 'beta_r',
     })
