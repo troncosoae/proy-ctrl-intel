@@ -38,23 +38,24 @@ if __name__ == "__main__":
             'v_W', 'beta_m', 'beta_r', 'omega_r',
             'omega_g', 'P_g', 'tau_g', 'tau_r', 'tau_gr',
             'theta_d',
-            # 'tau_gm', 'P_r'
-            'x', 'P_r'
+            # 'P_r',
+            'omega_nom',
+            'x',
         ],
         Ts)
     pygame_tracker = PlottingTurbineWindow(
         'pygame', {
-            # 'omega_gr': (255, 255, 255),
             'omega_g': (255, 255, 0),
+            'omega_nom': (255, 255, 100),
             'omega_r': (0, 255, 255),
             'beta_r': (255, 0, 0),
-            'P_g': (0, 255, 0),
-            'P_r': (100, 255, 100),
+            # 'P_g': (0, 255, 0),
+            # 'P_r': (100, 255, 100),
             'v_W': (0, 0, 255),
         },
         -0.5, 1.5, pygame_fs, get_close_sim_for_box(sim))
     pid_controller = PIDController(
-        'pid', 'P_r', 'P_g', 'x', -1, 0.01, 0.1, Ts)
+        'pid', 'omega_nom', 'omega_g', 'x', -20, 0, 0.1, Ts)
     pid_mapper = Mapper(
         'map_pid', ['x'], ['beta_r'],
         {'x': lambda x: 0.5*np.arctan(-x*0.2) + np.pi/4},
@@ -66,7 +67,7 @@ if __name__ == "__main__":
         blade_pitch_system, {'beta_r': np.pi/2, 'omega_r': 0})
     sim.add_box(drive_train_model, {'tau_g': 10})
     sim.add_box(generator_converter_model, {'tau_gr': 10})
-    sim.add_box(pid_controller, {'P_r': 1e2})
+    sim.add_box(pid_controller, {'omega_nom': 14})
     sim.add_box(pid_mapper)
 
     sim.add_box(measurer)
@@ -78,8 +79,12 @@ if __name__ == "__main__":
 
     measurer.plot_values({
         'tau_g', 'P_g', 'beta_m', 'v_W', 'omega_r', 'omega_g',
-        'beta_r', 'P_r'
+        'beta_r',
+        'omega_nom',
     })
     measurer.plot_values({
-        'beta_m', 'beta_r',
+        'omega_nom', 'omega_g',
+    })
+    measurer.plot_values({
+        'beta_r', 'beta_m',
     })
