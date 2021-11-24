@@ -7,7 +7,7 @@ from System.SystemBoxes import BladePitchSystem, \
     RandomWindModel, StepWindModel, ConstantWindModel
 from Simulation.PygameBoxes import PlottingTurbineWindow
 from System.MeasuringBoxes import PlottingMeasurer
-from Control.ControlBoxes import PIDController, TurbineController
+from Control.ControlBoxes import PIDController, Mapper
 
 
 if __name__ == "__main__":
@@ -37,6 +37,7 @@ if __name__ == "__main__":
             'omega_g', 'P_g', 'tau_g', 'tau_r', 'tau_gr',
             'theta_d',
             # 'tau_gm', 'P_r'
+            'x',
         ],
         Ts)
     pygame_tracker = PlottingTurbineWindow(
@@ -49,12 +50,22 @@ if __name__ == "__main__":
             'v_W': (0, 0, 255),
         },
         -0.5, 1.5, pygame_fs, get_close_sim_for_box(sim))
+    pid_controller = PIDController(
+        'pid', 'P_r', 'P_g', 'x', -10, 10, 10, Ts)
+    pid_mapper = Mapper(
+        'map_pid', ['x'], ['beta_r'],
+        {'x': lambda x: 0.5*np.arctan(-x*0.2) + np.pi/4},
+        {'x': 'beta_r'}
+    )
 
     sim.add_box(wind_model)
     sim.add_box(
         blade_pitch_system, {'beta_r': np.pi/2, 'omega_r': 0})
-    sim.add_box(drive_train_model, {'tau_g': 0})
-    sim.add_box(generator_converter_model, {'tau_gr': 0})
+    sim.add_box(drive_train_model, {'tau_g': 10})
+    sim.add_box(generator_converter_model, {'tau_gr': 10})
+    sim.add_box(pid_controller, {'P_r': 1e2})
+    sim.add_box(pid_mapper)
+
     sim.add_box(measurer)
     sim.add_box(pygame_tracker)
 
@@ -63,5 +74,6 @@ if __name__ == "__main__":
     pygame_tracker.quit_pygame()
 
     measurer.plot_values({
-        'tau_g', 'P_g', 'beta_m', 'v_W', 'omega_r', 'omega_g'
+        'tau_g', 'P_g', 'beta_m', 'v_W', 'omega_r', 'omega_g',
+        'beta_r',
     })
