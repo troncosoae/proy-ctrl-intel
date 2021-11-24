@@ -21,11 +21,11 @@ if __name__ == "__main__":
 
     sim = Simulation()
 
-    wind_model = RandomWindModel('wind_model', Ts)
+    # wind_model = RandomWindModel('wind_model', Ts)
     # wind_model = StepWindModel('wind_model', Ts, 1)
     # wind_model = StepWindModel('wind_model', Ts, 5, mean=5, std=3)
-    # wind_model = StepWindModel('wind_model', Ts, 10, mean=15, std=3)
-    # wind_model = ConstantWindModel('wind_model', 8)
+    # wind_model = StepWindModel('wind_model', Ts, 5, mean=15, std=3)
+    wind_model = ConstantWindModel('wind_model', 8)
     # wind_model = ConstantWindModel('wind_model', 15)
     # wind_model = ConstantWindModel('wind_model', 0.001)
     blade_pitch_system = BladePitchSystem('bp_sys', Ts)
@@ -58,7 +58,6 @@ if __name__ == "__main__":
     pid_mapper = Mapper(
         'map_pid', ['x'], ['beta_r'],
         {'x': lambda x: 0.5*np.arctan(-x*0.2) + np.pi/4},
-        # {'x': lambda x: np.arctan(-x*0.2)},
         {'x': 'beta_r'}
     )
 
