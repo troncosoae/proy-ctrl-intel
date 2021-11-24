@@ -7,7 +7,8 @@ from System.SystemBoxes import BladePitchSystem, \
     RandomWindModel, StepWindModel, ConstantWindModel
 from Simulation.PygameBoxes import PlottingTurbineWindow
 from System.MeasuringBoxes import PlottingMeasurer
-from Control.ControlBoxes import PIDController, TurbineController
+from Control.ControlBoxes import PIDController
+from GenericBoxes.GenericBoxes import Derivative
 
 
 if __name__ == "__main__":
@@ -30,13 +31,20 @@ if __name__ == "__main__":
     drive_train_model = DriveTrainModel(
         'dt_model', Ts)
     generator_converter_model = GeneratorConverterModel('gc_model', Ts)
+    der_omega = Derivative('der_omega', ['omega_g'], Ts)
+    tau_ctrl = PIDController(
+        'tau_ctrl', 'tau_ctrl_ref', 'der__omega_g', 'tau_gr',
+        -120, -31, -7, Ts, man_v_offset=10)
+
     measurer = PlottingMeasurer(
         'meas',
         [
             'v_W', 'beta_m', 'beta_r', 'omega_r',
             'omega_g', 'P_g', 'tau_g', 'tau_r', 'tau_gr',
             'theta_d',
-            # 'tau_gm', 'P_r'
+            # 'tau_gm', 'P_r',
+            'tau_gr',
+            'der__omega_g'
         ],
         Ts)
     pygame_tracker = PlottingTurbineWindow(
@@ -45,16 +53,19 @@ if __name__ == "__main__":
             'omega_g': (255, 255, 0),
             'omega_r': (0, 255, 255),
             'beta_r': (255, 0, 0),
-            'P_g': (0, 255, 0),
+            # 'P_g': (0, 255, 0),
             'v_W': (0, 0, 255),
         },
         -0.5, 1.5, pygame_fs, get_close_sim_for_box(sim))
 
     sim.add_box(wind_model)
     sim.add_box(
-        blade_pitch_system, {'beta_r': np.pi/2, 'omega_r': 0})
+        blade_pitch_system, {'beta_r': np.pi/2 - np.pi/8, 'omega_r': 0})
     sim.add_box(drive_train_model, {'tau_g': 0})
     sim.add_box(generator_converter_model, {'tau_gr': 0})
+    sim.add_box(der_omega)
+    sim.add_box(tau_ctrl, {'tau_ctrl_ref': 0})
+
     sim.add_box(measurer)
     sim.add_box(pygame_tracker)
 
@@ -65,3 +76,10 @@ if __name__ == "__main__":
     measurer.plot_values({
         'tau_g', 'P_g', 'beta_m', 'v_W', 'omega_r', 'omega_g'
     })
+    measurer.plot_values({
+        'tau_g', 'omega_g', 'der__omega_g'
+    })
+
+    # measurer.plot_values({
+    #     'tau_gr'
+    # })
