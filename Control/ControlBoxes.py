@@ -48,7 +48,7 @@ class PaperController(SimulationBox):
         self.last_beta_r = beta_r
         tau_gr = P_r/(nu_g*omega_g)
         return {
-            'beta_r': 0,
+            'beta_r': beta_r,
             'tau_gr': tau_gr,
         }
 

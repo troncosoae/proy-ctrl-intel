@@ -25,7 +25,7 @@ if __name__ == "__main__":
     # wind_model = RandomWindModel('wind_model', Ts)
     # wind_model = StepWindModel('wind_model', Ts, 3, mean=20, std=10)
     # wind_model = ConstantWindModel('wind_model', 8)
-    wind_model = ConstantWindModel('wind_model', 19)
+    wind_model = ConstantWindModel('wind_model', 15)
     # wind_model = ConstantWindModel('wind_model', 0.001)
     blade_pitch_system = BladePitchSystem('bp_sys', Ts)
     drive_train_model = DriveTrainModel(
@@ -58,7 +58,7 @@ if __name__ == "__main__":
         blade_pitch_system, {'beta_r': np.pi/2, 'omega_r': 0})
     sim.add_box(drive_train_model, {'tau_g': 0})
     sim.add_box(generator_converter_model, {'tau_gr': 0})
-    sim.add_box(ctrl, {'omega_nom': 50, 'P_r': 4.8e6})
+    sim.add_box(ctrl, {'omega_nom': 162, 'P_r': 4.8e6})
     sim.add_box(measurer)
     sim.add_box(pygame_tracker)
 
