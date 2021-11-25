@@ -13,7 +13,7 @@ class PaperController(SimulationBox):
         self.Ts = Ts
 
         self.last_e = 0
-        self.last_beta_r = 0
+        self.last_u = 0
         self.control_mode = 1
 
         self.chars = {
@@ -24,6 +24,7 @@ class PaperController(SimulationBox):
             'lmbda_opt': kwargs.get('lmbda_opt', 12.12),
             'nu_g': kwargs.get('nu_g', 0.98),  # 0.98
             'omega_delta': kwargs.get('omega_delta', 15),
+            'P_delta': kwargs.get('P_delta', 1e3),
         }
 
     def control_mode_1(self, omega_g):
@@ -42,10 +43,11 @@ class PaperController(SimulationBox):
     def control_mode_2(self, omega_g, P_r, omega_nom):
         nu_g = self.chars['nu_g']
         e = omega_g - omega_nom
-        beta_r = self.last_beta_r + \
+        u = self.last_u + \
             self.kp*e + (self.ki*self.Ts - self.kp)*self.last_e
+        beta_r = np.arctan(-u)
         self.last_e = e
-        self.last_beta_r = beta_r
+        self.last_u = u
         tau_gr = P_r/(nu_g*omega_g)
         return {
             'beta_r': beta_r,
@@ -62,11 +64,13 @@ class PaperController(SimulationBox):
         v_W = input_values['v_W']
 
         omega_delta = self.chars['omega_delta']
+        P_delta = self.chars['P_delta']
 
-        if P_g >= P_r or omega_g >= omega_nom:
+        if P_g >= P_r:
             self.control_mode = 2
-        elif omega_g < omega_nom - omega_delta:
+        elif np.abs(P_g - P_r) > P_delta:
             self.control_mode = 1
+            self.last_u = 0
 
         if self.control_mode == 1:
             print('control mode 1')
