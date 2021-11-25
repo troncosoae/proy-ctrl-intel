@@ -56,7 +56,7 @@ class StepWindModel(SimulationBox):
         self.counter = 0
         self.counter_max = T_stable/Ts
         self.mean = kwargs.get('mean', 10)
-        self.std = kwargs.get('std', 10)
+        self.std = kwargs.get('std', 5)
         self.v_W = np.abs(np.random.normal(self.mean, self.std))
 
     def advance(self, input_values):
