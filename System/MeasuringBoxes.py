@@ -27,6 +27,7 @@ class PlottingMeasurer(BasicMeasurer):
             self.t.append(0)
         else:
             self.t.append(self.t[-1] + self.Ts)
+        print(self.t[-1] + self.Ts, input_values)
         for key in self.inputs_keys:
             value = input_values[key]
             if key not in self.historical_values:

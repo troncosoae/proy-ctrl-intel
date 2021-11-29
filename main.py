@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     sim.add_box(wind_model)
     sim.add_box(
-        blade_pitch_system, {'beta_r': np.pi/2, 'omega_r': 0})
+        blade_pitch_system, {'beta_r': np.pi/4, 'omega_r': 0})
     sim.add_box(drive_train_model, {'tau_g': 0})
     sim.add_box(generator_converter_model, {'tau_gr': 0})
     sim.add_box(measurer)

@@ -88,29 +88,19 @@ class PlottingTurbineWindow(TurbineWindow):
         return super().advance(input_values)
 
     def get_positions(self):
-
-        print(self.values)
         arr_vals = [self.values[key] for key in self.values]
-        print(arr_vals)
         np_vals = np.asarray(arr_vals, dtype=np.float32)
-        print(np_vals)
-        print(np.max(np_vals), np.min(np_vals))
-        print(np.max([np.max(np_vals), -1*np.min(np_vals), 10]))
         abs_max = np.max([np.max(np_vals), -1*np.min(np_vals), 1])
         scale = (self.height)/(2*abs_max)
-        print(scale)
 
         # scale positions
         positions = {
             key: int(self.height/2 - self.values[key]*scale)
             for key in self.values}
 
-        print(positions)
         new_surface_size = (self.width, int(self.height*scale/self.last_scale))
         self.last_scale = scale
         offset = int((self.height - new_surface_size[1])/2)
-
-        print(new_surface_size, offset)
 
         return positions, new_surface_size, offset
 
