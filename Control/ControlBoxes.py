@@ -3,6 +3,79 @@ import numpy as np
 from Simulation.Simulation import SimulationBox
 
 
+class PaperController(SimulationBox):
+    def __init__(self, key, Ts, **kwargs):
+        super().__init__(
+            key, ['P_r', 'P_g', 'omega_g', 'omega_nom', 'v_W'],
+            ['beta_r', 'tau_gr'])
+        self.kp = 4
+        self.ki = 1
+        self.Ts = Ts
+
+        self.last_e = 0
+        self.last_beta_r = 0
+        self.control_mode = 1
+
+        self.chars = {
+            'Ng': kwargs.get('Ng', 95),
+            'ro': kwargs.get('ro', 1.225),  # ro
+            'R': kwargs.get('R', 57.5),  # R (m)
+            'Cp_max': kwargs.get('Cp_max', 0.6338),
+            'lmbda_opt': kwargs.get('lmbda_opt', 12.12),
+            'nu_g': kwargs.get('nu_g', 0.98),  # 0.98
+            'omega_delta': kwargs.get('omega_delta', 15),
+        }
+
+    def control_mode_1(self, omega_g):
+        R = self.chars['R']
+        ro = self.chars['ro']
+        Ng = self.chars['Ng']
+        Cp_max = self.chars['Cp_max']
+        lmbda_opt = self.chars['lmbda_opt']
+        K_opt = 1/2*ro*2*np.pi*R**2*R**3*Cp_max/(lmbda_opt**3)
+        tau_gr = K_opt*(omega_g/Ng)**2
+        return {
+            'beta_r': 0,
+            'tau_gr': tau_gr,
+        }
+
+    def control_mode_2(self, omega_g, P_r, omega_nom):
+        nu_g = self.chars['nu_g']
+        e = omega_g - omega_nom
+        beta_r = self.last_beta_r + \
+            self.kp*e + (self.ki*self.Ts - self.kp)*self.last_e
+        self.last_e = e
+        self.last_beta_r = beta_r
+        tau_gr = P_r/(nu_g*omega_g)
+        return {
+            'beta_r': beta_r,
+            'tau_gr': tau_gr,
+        }
+
+    def advance(self, input_values):
+        super().advance(input_values)
+        print(input_values)
+        omega_g = input_values['omega_g']
+        omega_nom = input_values['omega_nom']
+        P_r = input_values['P_r']
+        P_g = input_values['P_g']
+        v_W = input_values['v_W']
+
+        omega_delta = self.chars['omega_delta']
+
+        if P_g >= P_r or omega_g >= omega_nom:
+            self.control_mode = 2
+        elif omega_g < omega_nom - omega_delta:
+            self.control_mode = 1
+
+        if self.control_mode == 1:
+            print('control mode 1')
+            return self.control_mode_1(omega_g)
+        else:
+            print('control mode 2')
+            return self.control_mode_2(omega_g, P_r, omega_nom)
+
+
 class TurbineController(SimulationBox):
 
     def __init__(self, key, kp, ki, kd, Ts):
