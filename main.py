@@ -57,7 +57,7 @@ if __name__ == "__main__":
         blade_pitch_system, {'beta_r': np.pi/4, 'omega_r': 0})
     sim.add_box(drive_train_model, {'tau_g': 0})
     sim.add_box(generator_converter_model, {'tau_gr': 0})
-    sim.add_box(ctrl, {'omega_nom': 162, 'P_r': 4.8e6})
+    sim.add_box(ctrl, {'omega_nom': 38, 'P_r': 4.8e6})
     sim.add_box(measurer)
     sim.add_box(pygame_tracker)
 

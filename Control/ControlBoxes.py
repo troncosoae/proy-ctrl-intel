@@ -24,7 +24,7 @@ class PaperController(SimulationBox):
             'lmbda_opt': kwargs.get('lmbda_opt', 12.12),
             'nu_g': kwargs.get('nu_g', 0.98),  # 0.98
             'omega_delta': kwargs.get('omega_delta', 15),
-            'P_delta': kwargs.get('P_delta', 1e3),
+            'P_delta': kwargs.get('P_delta', 1e4),
         }
 
     def control_mode_1(self, omega_g):
@@ -54,6 +54,19 @@ class PaperController(SimulationBox):
             'tau_gr': tau_gr,
         }
 
+    def control_mode_3(self, omega_g):
+        R = self.chars['R']
+        ro = self.chars['ro']
+        Ng = self.chars['Ng']
+        Cp_max = self.chars['Cp_max']
+        lmbda_opt = self.chars['lmbda_opt']
+        K_opt = 1/2*ro*2*np.pi*R**2*R**3*Cp_max/(lmbda_opt**3)
+        tau_gr = K_opt*(omega_g/Ng)**2
+        return {
+            'beta_r': np.pi/2,
+            'tau_gr': tau_gr,
+        }
+
     def advance(self, input_values):
         super().advance(input_values)
         print(input_values)
@@ -66,7 +79,9 @@ class PaperController(SimulationBox):
         omega_delta = self.chars['omega_delta']
         P_delta = self.chars['P_delta']
 
-        if P_g >= P_r:
+        print('abs e', np.abs(P_g - P_r), 'P_delta', P_delta)
+        if np.abs(P_g - P_r) <= P_delta:
+            # TODO: que pasa cuando se pasa
             self.control_mode = 2
         elif np.abs(P_g - P_r) > P_delta:
             self.control_mode = 1
