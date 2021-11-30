@@ -16,7 +16,7 @@ class RandomWindModel(SimulationBox):
         }
 
         self.state = {
-            'v_m':  kwargs.get('v_m_0', 10),  # slow stochastic wind variations
+            'v_m':  kwargs.get('v_m_0', 5),  # slow stochastic wind variations
             'v_s':  kwargs.get('v_s_0', 0),  # stochastic part
             'v_ws': kwargs.get('v_ws_0', 0),  # wind shear
             'v_ts': kwargs.get('v_ts_0', 0),  # tower shadow
