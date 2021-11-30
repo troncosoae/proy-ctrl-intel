@@ -31,7 +31,7 @@ if __name__ == "__main__":
         'dt_model', Ts)
     generator_converter_model = GeneratorConverterModel('gc_model', Ts)
     ctrl = PaperController('ctrl', Ts)
-    
+
     measurer = PlottingMeasurer(
         'meas',
         [
