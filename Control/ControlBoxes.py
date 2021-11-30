@@ -46,6 +46,7 @@ class PaperController(SimulationBox):
         u = self.last_u + \
             self.kp*e + (self.ki*self.Ts - self.kp)*self.last_e
         beta_r = np.arctan(-u)
+        print(beta_r)
         self.last_e = e
         self.last_u = u
         tau_gr = P_r/(nu_g*omega_g)
@@ -83,16 +84,22 @@ class PaperController(SimulationBox):
         if np.abs(P_g - P_r) <= P_delta:
             # TODO: que pasa cuando se pasa
             self.control_mode = 2
-        elif np.abs(P_g - P_r) > P_delta:
+        elif P_r > P_delta + P_g:
             self.control_mode = 1
+            self.last_u = 0
+        elif P_r + P_delta < P_g:
+            self.control_mode = 3
             self.last_u = 0
 
         if self.control_mode == 1:
             print('control mode 1')
             return self.control_mode_1(omega_g)
-        else:
+        elif self.control_mode == 2:
             print('control mode 2')
             return self.control_mode_2(omega_g, P_r, omega_nom)
+        elif self.control_mode == 3:
+            print('control mode 3')
+            return self.control_mode_3(omega_g)
 
 
 class TurbineController(SimulationBox):
