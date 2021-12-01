@@ -7,13 +7,13 @@ class PaperController(SimulationBox):
     def __init__(self, key, Ts, **kwargs):
         super().__init__(
             key, ['P_r', 'P_g', 'omega_g', 'omega_nom', 'v_W'],
-            ['beta_r', 'tau_gr'])
-        self.kp = 4
-        self.ki = 1
+            ['beta_r', 'tau_gr', 'ctrl_mode'])
+        self.kp = -10
+        self.kd = -2  # 
         self.Ts = Ts
 
         self.last_e = 0
-        self.last_u = 0
+        self.last_u = 1e3  # to add -> beta = 0
         self.control_mode = 1
 
         self.chars = {
@@ -24,7 +24,7 @@ class PaperController(SimulationBox):
             'lmbda_opt': kwargs.get('lmbda_opt', 12.12),
             'nu_g': kwargs.get('nu_g', 0.98),  # 0.98
             'omega_delta': kwargs.get('omega_delta', 15),
-            'P_delta': kwargs.get('P_delta', 1e4),
+            'P_delta': kwargs.get('P_delta', 0.5e5),
         }
 
     def control_mode_1(self, omega_g):
@@ -38,21 +38,25 @@ class PaperController(SimulationBox):
         return {
             'beta_r': 0,
             'tau_gr': tau_gr,
+            'ctrl_mode': self.control_mode,
         }
 
     def control_mode_2(self, omega_g, P_r, omega_nom):
         nu_g = self.chars['nu_g']
         e = omega_g - omega_nom
-        u = self.last_u + \
-            self.kp*e + (self.ki*self.Ts - self.kp)*self.last_e
-        beta_r = np.arctan(-u)
-        print(beta_r)
+        de = (e - self.last_e)/self.Ts
+        du = self.kp*e + self.kd*de
+        u = self.last_u + du
+        beta_r = 0.5*(np.arctan(-u) + np.pi/2)
+        print('de', de, 'e', e, 'du', du, 'u', u)
+        print('beta_r', beta_r)
         self.last_e = e
         self.last_u = u
         tau_gr = P_r/(nu_g*omega_g)
         return {
             'beta_r': beta_r,
             'tau_gr': tau_gr,
+            'ctrl_mode': self.control_mode,
         }
 
     def control_mode_3(self, omega_g):
@@ -66,6 +70,7 @@ class PaperController(SimulationBox):
         return {
             'beta_r': np.pi/2,
             'tau_gr': tau_gr,
+            'ctrl_mode': self.control_mode,
         }
 
     def advance(self, input_values):
@@ -81,15 +86,18 @@ class PaperController(SimulationBox):
         P_delta = self.chars['P_delta']
 
         print('abs e', np.abs(P_g - P_r), 'P_delta', P_delta)
-        if np.abs(P_g - P_r) <= P_delta:
+        if np.abs(P_g - P_r) <= P_delta and (
+                self.control_mode == 1 or self.control_mode == 3):
             # TODO: que pasa cuando se pasa
             self.control_mode = 2
-        elif P_r > P_delta + P_g:
+        elif P_r > P_delta + P_g and (
+                self.control_mode == 2 or self.control_mode == 3):
             self.control_mode = 1
-            self.last_u = 0
-        elif P_r + P_delta < P_g:
+            self.last_u = 1e3  # beta_r = 0
+        elif P_r + P_delta < P_g and (
+                self.control_mode == 1 or self.control_mode == 2):
             self.control_mode = 3
-            self.last_u = 0
+            self.last_u = -1e3  # beta_r = pi/2
 
         if self.control_mode == 1:
             print('control mode 1')

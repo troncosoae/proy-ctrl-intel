@@ -39,6 +39,7 @@ if __name__ == "__main__":
             'omega_g', 'P_g', 'tau_g', 'tau_r', 'tau_gr',
             'theta_d',
             # 'tau_gm', 'P_r'
+            'ctrl_mode',
         ],
         Ts)
     pygame_tracker = PlottingTurbineWindow(
@@ -57,7 +58,7 @@ if __name__ == "__main__":
         blade_pitch_system, {'beta_r': np.pi/4, 'omega_r': 0})
     sim.add_box(drive_train_model, {'tau_g': 0})
     sim.add_box(generator_converter_model, {'tau_gr': 0})
-    sim.add_box(ctrl, {'omega_nom': 38, 'P_r': 4.8e6})
+    sim.add_box(ctrl, {'omega_nom': 37.4, 'P_r': 4.8e6})
     sim.add_box(measurer)
     sim.add_box(pygame_tracker)
 
@@ -69,5 +70,5 @@ if __name__ == "__main__":
         'tau_g', 'P_g', 'beta_m', 'v_W', 'omega_r', 'omega_g'
     })
     measurer.plot_values({
-        'omega_g'
+        'omega_g', 'ctrl_mode'
     })
