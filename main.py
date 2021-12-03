@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     sim.add_box(wind_model)
     sim.add_box(
-        blade_pitch_system, {'beta_r': np.pi/4, 'omega_r': 0})
+        blade_pitch_system, {'beta_r': 0, 'omega_r': 0})
     sim.add_box(drive_train_model, {'tau_g': 0})
     sim.add_box(generator_converter_model, {'tau_gr': 0})
     sim.add_box(ctrl, {'omega_nom': 37.4, 'P_r': 4.8e6})
@@ -70,5 +70,5 @@ if __name__ == "__main__":
         'tau_g', 'P_g', 'beta_m', 'v_W', 'omega_r', 'omega_g'
     })
     measurer.plot_values({
-        'omega_g', 'ctrl_mode'
+        'omega_g', 'ctrl_mode', 'beta_m', 'beta_r'
     })

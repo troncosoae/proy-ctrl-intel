@@ -3,17 +3,73 @@ import numpy as np
 from Simulation.Simulation import SimulationBox
 
 
+class FuzzyController(SimulationBox):
+    def __init__(self, key, Ts, **kwargs):
+        super().__init__(
+            key, ['P_r', 'P_g', 'omega_g', 'omega_nom', 'v_W'],
+            ['beta_r', 'tau_gr', 'ctrl_mode'])
+        self.kp = -1.5e-3
+        self.kd = 0.8e-3
+        self.Ts = Ts
+
+        self.last_omega_e = 0
+        self.last_beta_r = 0
+        self.control_mode = 1
+
+        self.chars = {
+            'Ng': kwargs.get('Ng', 95),
+            'ro': kwargs.get('ro', 1.225),  # ro
+            'R': kwargs.get('R', 57.5),  # R (m)
+            'Cp_max': kwargs.get('Cp_max', 0.6338),
+            'lmbda_opt': kwargs.get('lmbda_opt', 12.12),
+            'nu_g': kwargs.get('nu_g', 0.98),  # 0.98
+            'omega_delta': kwargs.get('omega_delta', 15),
+            'P_delta': kwargs.get('P_delta', 0.5e5),
+        }
+
+    def advance(self, input_values):
+        super().advance(input_values)
+        omega_g = input_values['omega_g']
+        omega_nom = input_values['omega_nom']
+        P_r = input_values['P_r']
+        P_g = input_values['P_g']
+        v_W = input_values['v_W']
+        omega_delta = self.chars['omega_delta']
+        P_delta = self.chars['P_delta']
+
+        omega_e = omega_g - omega_nom
+        beta_r = 2
+
+        self.last_omega_e = omega_e
+        self.last_beta_r = beta_r
+
+    def ctrl_mode_1(self, omega_g):
+        R = self.chars['R']
+        ro = self.chars['ro']
+        Ng = self.chars['Ng']
+        Cp_max = self.chars['Cp_max']
+        lmbda_opt = self.chars['lmbda_opt']
+        K_opt = 1/2*ro*2*np.pi*R**2*R**3*Cp_max/(lmbda_opt**3)
+        tau_gr = K_opt*(omega_g/Ng)**2
+        return {
+            'beta_r': 0,
+            'tau_gr': tau_gr,
+            'ctrl_mode': self.control_mode,
+        }
+
+
+
 class PaperController(SimulationBox):
     def __init__(self, key, Ts, **kwargs):
         super().__init__(
             key, ['P_r', 'P_g', 'omega_g', 'omega_nom', 'v_W'],
             ['beta_r', 'tau_gr', 'ctrl_mode'])
-        self.kp = -10
-        self.kd = -2  # 
+        self.kp = -0.0015  #
+        self.kd = -0.0008  #
         self.Ts = Ts
 
         self.last_e = 0
-        self.last_u = 1e3  # to add -> beta = 0
+        self.last_u = 0  # to add -> beta = 0
         self.control_mode = 1
 
         self.chars = {
@@ -47,7 +103,9 @@ class PaperController(SimulationBox):
         de = (e - self.last_e)/self.Ts
         du = self.kp*e + self.kd*de
         u = self.last_u + du
-        beta_r = 0.5*(np.arctan(-u) + np.pi/2)
+        u = np.max([0, np.min([np.pi/2, u])])
+        # beta_r = 0.5*(np.arctan(-u) + np.pi/2)
+        beta_r = u
         print('de', de, 'e', e, 'du', du, 'u', u)
         print('beta_r', beta_r)
         self.last_e = e
@@ -93,11 +151,13 @@ class PaperController(SimulationBox):
         elif P_r > P_delta + P_g and (
                 self.control_mode == 2 or self.control_mode == 3):
             self.control_mode = 1
-            self.last_u = 1e3  # beta_r = 0
+            self.last_u = 0  # beta_r = 0
+            self.last_e = 0
         elif P_r + P_delta < P_g and (
                 self.control_mode == 1 or self.control_mode == 2):
             self.control_mode = 3
-            self.last_u = -1e3  # beta_r = pi/2
+            self.last_u = np.pi/2  # beta_r = pi/2
+            self.last_e = 0
 
         if self.control_mode == 1:
             print('control mode 1')
