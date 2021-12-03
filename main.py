@@ -8,6 +8,7 @@ from System.SystemBoxes import BladePitchSystem, \
 from Simulation.PygameBoxes import PlottingTurbineWindow
 from System.MeasuringBoxes import PlottingMeasurer
 from Control.ControlBoxes import PaperController, ExpertPID
+from FuzzyToolbox.Control import FuzzyPID
 
 
 if __name__ == "__main__":
@@ -30,7 +31,8 @@ if __name__ == "__main__":
     drive_train_model = DriveTrainModel(
         'dt_model', Ts)
     generator_converter_model = GeneratorConverterModel('gc_model', Ts)
-    ctrl = ExpertPID('ctrl')
+    # ctrl = ExpertPID('ctrl')
+    ctrl = FuzzyPID('ctrl')
 
     measurer = PlottingMeasurer(
         'meas',
