@@ -21,10 +21,10 @@ if __name__ == "__main__":
 
     sim = Simulation()
 
-    wind_model = RandomWindModel('wind_model', Ts)
+    # wind_model = RandomWindModel('wind_model', Ts)
     # wind_model = StepWindModel('wind_model', Ts, 1)
     # wind_model = ConstantWindModel('wind_model', 8)
-    # wind_model = ConstantWindModel('wind_model', 16)
+    wind_model = ConstantWindModel('wind_model', 18)
     # wind_model = ConstantWindModel('wind_model', 0.001)
     blade_pitch_system = BladePitchSystem('bp_sys', Ts)
     drive_train_model = DriveTrainModel(
