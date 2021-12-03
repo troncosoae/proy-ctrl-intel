@@ -7,7 +7,7 @@ from System.SystemBoxes import BladePitchSystem, \
     RandomWindModel, StepWindModel, ConstantWindModel
 from Simulation.PygameBoxes import PlottingTurbineWindow
 from System.MeasuringBoxes import PlottingMeasurer
-from Control.ControlBoxes import PaperController
+from Control.ControlBoxes import PaperController, ExpertPID
 
 
 if __name__ == "__main__":
@@ -30,7 +30,7 @@ if __name__ == "__main__":
     drive_train_model = DriveTrainModel(
         'dt_model', Ts)
     generator_converter_model = GeneratorConverterModel('gc_model', Ts)
-    ctrl = PaperController('ctrl', Ts)
+    ctrl = ExpertPID('ctrl')
 
     measurer = PlottingMeasurer(
         'meas',
@@ -39,7 +39,7 @@ if __name__ == "__main__":
             'omega_g', 'P_g', 'tau_g', 'tau_r', 'tau_gr',
             'theta_d',
             # 'tau_gm', 'P_r'
-            'ctrl_mode',
+            # 'ctrl_mode',
         ],
         Ts)
     pygame_tracker = PlottingTurbineWindow(
@@ -70,5 +70,5 @@ if __name__ == "__main__":
         'tau_g', 'P_g', 'beta_m', 'v_W', 'omega_r', 'omega_g'
     })
     measurer.plot_values({
-        'omega_g', 'ctrl_mode', 'beta_m', 'beta_r'
+        'omega_g', 'beta_m', 'beta_r'
     })
