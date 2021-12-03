@@ -46,11 +46,16 @@ class ExpertPID(SimulationBox):
         self.last_e = e
 
         if e < -1e6:
-            beta_r = 0
-        elif e > 1e6:
-            beta_r = np.pi/2
+            x = 0
+        elif -1e6 <= e < -1e5:
+            x = 1/4
+        elif 1e5 < e <= 1e6:
+            x = 3/4
+        elif 1e6 < e:
+            x = 4/4
         else:
-            beta_r = np.pi/4
+            x = 2/4
+        beta_r = x*np.pi/2
 
         print(beta_r)
 
