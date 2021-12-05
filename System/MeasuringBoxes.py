@@ -62,3 +62,24 @@ class PlottingMeasurer(BasicMeasurer):
         data_df = pd.DataFrame(data)
 
         data_df.to_csv(path)
+
+
+class IndexTracker(SimulationBox):
+    def __init__(self, key, Ts):
+        inputs_keys = ['P_g', 'P_r']
+        outputs_keys = ['J1']
+        super().__init__(key, inputs_keys, outputs_keys)
+
+        self.Ts = Ts
+        self.j1 = 0
+
+    def advance(self, input_values):
+        super().advance(input_values)
+        P_g = input_values['P_g']
+        P_r = input_values['P_r']
+
+        self.j1 += self.Ts*(P_r - P_g)**2
+
+        return {
+            'J1': self.j1
+        }
