@@ -25,7 +25,7 @@ if __name__ == "__main__":
     # wind_model = RandomWindModel('wind_model', Ts)
     # wind_model = StepWindModel('wind_model', Ts, 3, mean=10, std=3)
     # wind_model = ConstantWindModel('wind_model', 8)
-    wind_model = ConstantWindModel('wind_model', 15)
+    wind_model = ConstantWindModel('wind_model', 22)
     # wind_model = ConstantWindModel('wind_model', 0.001)
     blade_pitch_system = BladePitchSystem('bp_sys', Ts)
     drive_train_model = DriveTrainModel(
@@ -72,6 +72,10 @@ if __name__ == "__main__":
 
     measurer.plot_values({
         'tau_g', 'P_g', 'beta_m', 'v_W', 'omega_r', 'omega_g'
+    })
+
+    measurer.plot_values({
+        'beta_r', 'tau_gr'
     })
 
     measurer.plot_values({
