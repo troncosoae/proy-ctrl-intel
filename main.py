@@ -6,7 +6,7 @@ from System.SystemBoxes import BladePitchSystem, \
     DriveTrainModel, GeneratorConverterModel, \
     RandomWindModel, StepWindModel, ConstantWindModel
 from Simulation.PygameBoxes import PlottingTurbineWindow
-from System.MeasuringBoxes import PlottingMeasurer
+from System.MeasuringBoxes import PlottingMeasurer, IndexTracker
 from Control.ControlBoxes import PaperController, ExpertPID
 from FuzzyToolbox.Control import FuzzyPID
 
@@ -22,10 +22,10 @@ if __name__ == "__main__":
 
     sim = Simulation()
 
-    wind_model = RandomWindModel('wind_model', Ts)
+    # wind_model = RandomWindModel('wind_model', Ts)
     # wind_model = StepWindModel('wind_model', Ts, 1)
     # wind_model = ConstantWindModel('wind_model', 8)
-    # wind_model = ConstantWindModel('wind_model', 18)
+    wind_model = ConstantWindModel('wind_model', 18)
     # wind_model = ConstantWindModel('wind_model', 0.001)
     blade_pitch_system = BladePitchSystem('bp_sys', Ts)
     drive_train_model = DriveTrainModel(
@@ -42,8 +42,11 @@ if __name__ == "__main__":
             'theta_d',
             # 'tau_gm', 'P_r'
             # 'ctrl_mode',
+            'P_r',
+            'J1',
         ],
         Ts)
+    index_tracker = IndexTracker('index_tracker', Ts)
     pygame_tracker = PlottingTurbineWindow(
         'pygame', {
             # 'omega_gr': (255, 255, 255),
@@ -61,6 +64,7 @@ if __name__ == "__main__":
     sim.add_box(drive_train_model, {'tau_g': 0})
     sim.add_box(generator_converter_model, {'tau_gr': 0})
     sim.add_box(ctrl, {'omega_nom': 37.4, 'P_r': 4.8e6})
+    sim.add_box(index_tracker)
     sim.add_box(measurer)
     sim.add_box(pygame_tracker)
 
@@ -73,4 +77,7 @@ if __name__ == "__main__":
     })
     measurer.plot_values({
         'omega_g', 'beta_m', 'beta_r'
+    })
+    measurer.plot_values({
+        'J1'
     })
